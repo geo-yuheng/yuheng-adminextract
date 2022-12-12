@@ -1,11 +1,23 @@
 import pprint
+from typing import List, Dict
 
 from kqs.waifu import Waifu
+
+def show_hierarchy(relation_list:List[str])->None:
+    hierarchy:Dict[int,List[str]]={}
+    for relation in relation_list:
+        admin_level=relation[1]
+        if hierarchy.get(admin_level)==None:
+            hierarchy[admin_level]=[]
+        hierarchy[admin_level].append(relation)
+    pprint.pprint(hierarchy)
+
+
 
 def main():
     map=Waifu()
     map.read(mode="file",file_path="map.osm")
-    admin_relation={}
+    admin_relation=[]
     for id in map.relation_dict:
         flag_type_boundary=False
         flag_boundary_administrative = False
@@ -25,11 +37,9 @@ def main():
                     name=this_relation.tags["name"]
                 if "ref" in this_relation.tags:
                     ref=this_relation.tags["ref"]
-        if admin_relation.get(admin_level)==None:
-            admin_relation[admin_level]=[]
-        admin_relation[admin_level].append([id,admin_level,name,ref])
-    pprint.pprint(admin_relation)
-
+        admin_relation.append([id,admin_level,name,ref])
+    # pprint.pprint(admin_relation)
+    show_hierarchy(admin_relation)
 
 if __name__ == "__main__":
     main()
