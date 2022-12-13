@@ -51,14 +51,9 @@ def extract_admin_relation(map: Waifu) -> List[List[str]]:
     return admin_relation
 
 
-def extract_tree(
-    admin_relation: List[List[str]], map: Waifu, extract_strategy="auto"
-) -> Optional[list]:
-    admin_tree = []
-    # 是否需要手动指定根节点？
-    # 在找得到唯一的最高等级的时候可以直接用，但如果就是查非最高级开始的咋办
-    # 然后就是逐个访问了，这里建议深度优先策略
-
+def get_highest_admin_id(
+    admin_relation: List[List[str]], extract_strategy="auto"
+) -> Optional[int]:
     # auto=就是上述判断不行就要求手输
     # highest=指定最高级的，不行就炸
     # input=Manual assign directly.
@@ -89,9 +84,14 @@ def extract_tree(
     else:
         return None
     print(highest_admin_id)
+    return highest_admin_id
 
-    def extract_subarea(current_relation_id: int):
-        tree=[]
+
+def extract_tree(admin_relation: List[List[str]], map: Waifu) -> list:
+    highest_admin_id = get_highest_admin_id(admin_relation)
+
+    def extract_subarea(current_relation_id: int) -> list:
+        tree = []
         relation = map.relation_dict[current_relation_id]
         members = [
             {"type": x.type, "ref": x.ref, "role": x.role}
@@ -108,19 +108,22 @@ def extract_tree(
                         return False
 
                 subareas.append(
-                    [current_relation_id, member["ref"], is_subarea_downloaded(member["ref"])]
+                    [
+                        current_relation_id,
+                        member["ref"],
+                        is_subarea_downloaded(member["ref"]),
+                    ]
                 )
-        print(subareas)
-        if len(subareas)>0:
+        # print(subareas)
+        if len(subareas) > 0:
             for subarea in subareas:
-                if subarea[2]==True:
-                    tree.append(subarea+[extract_subarea(subarea[1])])
+                if subarea[2] == True:
+                    tree.append(subarea.append(extract_subarea(subarea[1])))
         else:
             return []
 
-    extract_subarea(highest_admin_id)
-
-    return admin_tree
+        return tree
+    return extract_subarea(highest_admin_id)
 
 
 def main():
@@ -128,7 +131,8 @@ def main():
     map.read(mode="file", file_path="map.osm")
     admin_relation = extract_admin_relation(map)
     show_hierarchy(admin_relation)
-    extract_tree(admin_relation, map)
+    admin_tree = extract_tree(admin_relation, map)
+    print(admin_tree)
 
 
 if __name__ == "__main__":
