@@ -91,13 +91,32 @@ def extract_tree(
     print(highest_admin_id)
 
     def extract_subarea(current_relation_id: int):
+        tree=[]
         relation = map.relation_dict[current_relation_id]
-        members=[(x.type,x.ref,x.role) for x in relation.members]
-        subareas=[]
+        members = [
+            {"type": x.type, "ref": x.ref, "role": x.role}
+            for x in relation.members
+        ]
+        subareas = []
         for member in members:
-            if member.role=="subarea":
-                subareas.append(member.ref)
+            if member["role"] == "subarea":
 
+                def is_subarea_downloaded(subarea_id: int):
+                    if subarea_id in map.relation_dict:
+                        return True
+                    else:
+                        return False
+
+                subareas.append(
+                    [current_relation_id, member["ref"], is_subarea_downloaded(member["ref"])]
+                )
+        print(subareas)
+        if len(subareas)>0:
+            for subarea in subareas:
+                if subarea[2]==True:
+                    tree.append(subarea+[extract_subarea(subarea[1])])
+        else:
+            return []
 
     extract_subarea(highest_admin_id)
 
