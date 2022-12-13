@@ -1,5 +1,5 @@
 import pprint
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from kqs.waifu import Waifu
 
@@ -87,52 +87,50 @@ def get_highest_admin_id(
     return highest_admin_id
 
 
-def extract_tree(admin_relation: List[List[str]], map: Waifu) -> list:
-    highest_admin_id = get_highest_admin_id(admin_relation)
+def extract_subarea(map: Waifu, current_relation_id: int) -> list:
+    tree = []
+    relation = map.relation_dict[current_relation_id]
+    members = [
+        {"type": x.type, "ref": x.ref, "role": x.role}
+        for x in relation.members
+    ]
+    subareas = []
+    for member in members:
+        if member["role"] == "subarea":
 
-    def extract_subarea(current_relation_id: int) -> list:
-        tree = []
-        relation = map.relation_dict[current_relation_id]
-        members = [
-            {"type": x.type, "ref": x.ref, "role": x.role}
-            for x in relation.members
-        ]
-        subareas = []
-        for member in members:
-            if member["role"] == "subarea":
+            def is_subarea_downloaded(subarea_id: int):
+                if subarea_id in map.relation_dict:
+                    return True
+                else:
+                    return False
 
-                def is_subarea_downloaded(subarea_id: int):
-                    if subarea_id in map.relation_dict:
-                        return True
-                    else:
-                        return False
+            subareas.append(
+                [
+                    current_relation_id,
+                    member["ref"],
+                    is_subarea_downloaded(member["ref"]),
+                ]
+            )
+    # print(subareas)
+    if len(subareas) > 0:
+        for subarea in subareas:
+            if subarea[2] == True:
+                tree.append(subarea.append(extract_subarea(map, subarea[1])))
+    else:
+        return []
 
-                subareas.append(
-                    [
-                        current_relation_id,
-                        member["ref"],
-                        is_subarea_downloaded(member["ref"]),
-                    ]
-                )
-        # print(subareas)
-        if len(subareas) > 0:
-            for subarea in subareas:
-                if subarea[2] == True:
-                    tree.append(subarea.append(extract_subarea(subarea[1])))
-        else:
-            return []
-
-        return tree
-    return extract_subarea(highest_admin_id)
+    return tree
 
 
 def main():
     map = Waifu()
     map.read(mode="file", file_path="map.osm")
     admin_relation = extract_admin_relation(map)
-    show_hierarchy(admin_relation)
-    admin_tree = extract_tree(admin_relation, map)
-    print(admin_tree)
+    # show_hierarchy(admin_relation)
+    admin_subarea_tree = extract_subarea(
+        map, get_highest_admin_id(admin_relation)
+    )
+    print(admin_subarea_tree)
 
 
 if __name__ == "__main__":
