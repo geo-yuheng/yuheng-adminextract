@@ -41,12 +41,9 @@ def extract_admin_relation(map: Waifu) -> List[List[str]]:
                 flag_type_boundary == True
                 and flag_boundary_administrative == True
             ):
-                if "admin_level" in this_relation.tags:
-                    admin_level = this_relation.tags["admin_level"]
-                if "name" in this_relation.tags:
-                    name = this_relation.tags["name"]
-                if "ref" in this_relation.tags:
-                    ref = this_relation.tags["ref"]
+                admin_level = this_relation.tags.get("admin_level")
+                name = this_relation.tags.get("name")
+                ref = this_relation.tags.get("ref")
         admin_relation.append([id, admin_level, name, ref])
     return admin_relation
 
@@ -115,10 +112,19 @@ def extract_subarea(map: Waifu, current_relation_id: int) -> list:
     if len(subareas) > 0:
         for subarea in subareas:
             if subarea[2] == True:
-                tree.append(subarea.append(extract_subarea(map, subarea[1])))
+                tree.append(
+                    subarea
+                    + [
+                        (
+                            map.relation_dict[subarea[1]].tags["admin_level"],
+                            map.relation_dict[subarea[1]].tags.get("name"),
+                            map.relation_dict[subarea[1]].tags.get("ref"),
+                        )
+                    ]
+                    + [extract_subarea(map, subarea[1])]
+                )
     else:
         return []
-
     return tree
 
 
@@ -127,10 +133,11 @@ def main():
     map.read(mode="file", file_path="map.osm")
     admin_relation = extract_admin_relation(map)
     # show_hierarchy(admin_relation)
+    # exit(0)
     admin_subarea_tree = extract_subarea(
         map, get_highest_admin_id(admin_relation)
     )
-    print(admin_subarea_tree)
+    pprint.pprint(admin_subarea_tree)
 
 
 if __name__ == "__main__":
