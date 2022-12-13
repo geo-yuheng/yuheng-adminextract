@@ -4,6 +4,11 @@ from typing import Dict, List, Optional
 from kqs.waifu import Waifu
 
 
+def i18n_string(strid: str):
+    if strid == "enter-root-id":
+        return "请输入要查询的根关系的id:"
+
+
 def show_hierarchy(relation_list: List[List[str]]) -> None:
     hierarchy: Dict[str, List[List[str]]] = {}
     for relation in relation_list:
@@ -12,6 +17,7 @@ def show_hierarchy(relation_list: List[List[str]]) -> None:
             hierarchy[admin_level] = []
         hierarchy[admin_level].append(relation)
     pprint.pprint(hierarchy)
+    print("=" * 50)
 
 
 def extract_admin_relation(map: Waifu) -> List[List[str]]:
@@ -46,42 +52,54 @@ def extract_admin_relation(map: Waifu) -> List[List[str]]:
 
 
 def extract_tree(
-    admin_relation: List[List[str]], map: Waifu
+    admin_relation: List[List[str]], map: Waifu, extract_strategy="auto"
 ) -> Optional[list]:
     admin_tree = []
     # 是否需要手动指定根节点？
     # 在找得到唯一的最高等级的时候可以直接用，但如果就是查非最高级开始的咋办
     # 然后就是逐个访问了，这里建议深度优先策略
-    strategy_root = "auto"  # highest=指定最高级的，不行就炸，auto就是上述判断不行就要求手输，input就是手输为重
 
-    if strategy_root == "auto" or strategy_root == "highest":
-        highest_admin_value = 999
+    # auto=就是上述判断不行就要求手输
+    # highest=指定最高级的，不行就炸
+    # input=Manual assign directly.
+
+    if extract_strategy == "auto" or extract_strategy == "highest":
         highest_admin_id = 0
+        highest_admin_value = 999
         highest_admin_count = 0
         highest_admin = []
         for relation in admin_relation:
-            if highest_admin_value != "" and (
-                int(relation[1]) <= int(highest_admin_value)
-            ):
-                highest_admin_value = relation[1]
-                highest_admin_id = relation[0]
-                highest_admin_count += 1
-                highest_admin.append([highest_admin_id, highest_admin_value])
+            if relation[1] != "":
+                if int(relation[1]) <= int(highest_admin_value):
+                    highest_admin_value = int(relation[1])
+                    highest_admin_id = int(relation[0])
+                    highest_admin_count += 1
+                    highest_admin.append(
+                        [highest_admin_id, highest_admin_value]
+                    )
         print(highest_admin)
-        if strategy_root == "highest":
+        if extract_strategy == "highest":
             return None
         else:
             if highest_admin_count > 1:
-                # 查找失败
-                highest_admin_id = input("请输入要查询的根关系的id")
-                print(highest_admin_id)
-            else:
-                print(highest_admin_id)
-    elif strategy_root == "input":
-        highest_admin_id = input("请输入要查询的根关系的id")
-        print(highest_admin_id)
+                # Multiple result, need manual assign.
+                highest_admin_id = input(i18n_string("enter-root-id"))
+    elif extract_strategy == "input":
+        highest_admin_id = input(i18n_string("enter-root-id"))
     else:
-        print("¿")
+        return None
+    print(highest_admin_id)
+
+    def extract_subarea(current_relation_id: int):
+        relation = map.relation_dict[current_relation_id]
+        members=[(x.type,x.ref,x.role) for x in relation.members]
+        subareas=[]
+        for member in members:
+            if member.role=="subarea":
+                subareas.append(member.ref)
+
+
+    extract_subarea(highest_admin_id)
 
     return admin_tree
 
