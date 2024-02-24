@@ -77,7 +77,7 @@ def get_highest_admin_id(
                 # Multiple result, need manual assign.
                 highest_admin_id = input(i18n_string("enter-root-id"))
     elif extract_strategy == "input":
-        highest_admin_id = input(i18n_string("enter-root-id"))
+        highest_admin_id = int(input(i18n_string("enter-root-id")))
     else:
         return None
     print(highest_admin_id)
