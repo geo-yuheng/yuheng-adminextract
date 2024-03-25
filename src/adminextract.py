@@ -1,5 +1,6 @@
 import networkx as nx
 import json
+import argparse
 from typing import Dict
 from kqs.waifu import Waifu
 
@@ -33,6 +34,12 @@ def i18n_string(strid: str) -> str:
             "invalid-id": "The entered ID is invalid, please enter a valid node ID.",
             "enter-valid-number": "Please enter a valid number.",
             "multiple-root-nodes": "Multiple root nodes of the same highest level found, please choose one as the root node:",
+            "input_file_help": "Path to the input map file.",
+            "output_file_help": "Path to the output JSON file.",
+            "stop_level_help": "Set the desired stop level. Cannot be used with --only-level.",
+            "only_level_help": "Set the level to exclusively include. Cannot be used with --stop-level.",
+            "export_plain_json_help": "Export plain JSON instead of nested JSON.",
+            "root_select_strategy_help": "Strategy to select the root node. Default is 'auto'.",
         },
         "zh": {
             "enter-root-id": "请输入根节点ID：",
@@ -41,6 +48,12 @@ def i18n_string(strid: str) -> str:
             "invalid-id": "输入的ID无效，请输入有效的节点ID。",
             "enter-valid-number": "请输入一个有效的数字。",
             "multiple-root-nodes": "发现多个同等最高级别的节点，请选择一个作为根节点：",
+            "input_file_help": "输入地图文件的路径。",
+            "output_file_help": "输出JSON文件的路径。",
+            "stop_level_help": "设置所需的终止级别。不能与--only-level一起使用。",
+            "only_level_help": "设置仅包含的级别。不能与--stop-level一起使用。",
+            "export_plain_json_help": "导出普通JSON而不是嵌套JSON。",
+            "root_select_strategy_help": "选择根节点的策略。默认为'auto'。",
         },
     }
     return strings.get(LOCALE, {}).get(strid, "")
@@ -88,11 +101,13 @@ def build_graph(map: Waifu) -> nx.DiGraph:
     return G
 
 
-def graph_to_nested_json(G: nx.DiGraph, root_id: int, stop_level: int = None, only_level: int = None) -> Dict:
+def graph_to_nested_json(
+    G: nx.DiGraph, root_id: int, stop_level: int = None, only_level: int = None
+) -> Dict:
     """
     Converts a directed graph to a nested JSON structure starting from a specified root node.
     Can optionally stop at a specified admin level or only include nodes of a specific admin level.
-    
+
     Args:
         G (nx.DiGraph): The directed graph to convert.
         root_id (int): The ID of the root node from which to start the nesting.
@@ -101,10 +116,20 @@ def graph_to_nested_json(G: nx.DiGraph, root_id: int, stop_level: int = None, on
 
     Returns:
         Dict: A nested dictionary representing the hierarchical structure.
+
+    将有向图转换为从指定根节点开始的嵌套 JSON 结构。
+
+    参数:
+        G (nx.DiGraph): 要转换的有向图。
+        root_id (int): 开始嵌套的根节点的 ID。
+
+    返回:
+        Dict: 表示层级结构的嵌套字典。
     """
+
     def recurse(node, current_level=None):
         node_data = G.nodes[node]
-        node_level = int(node_data.get('admin_level', 0))
+        node_level = int(node_data.get("admin_level", 0))
         if stop_level is not None and node_level >= stop_level:
             return {"id": node, **node_data}
         if only_level is not None and node_level != only_level:
@@ -118,7 +143,9 @@ def graph_to_nested_json(G: nx.DiGraph, root_id: int, stop_level: int = None, on
             **node_data,
             "subareas": children,
         }
+
     return recurse(root_id)
+
 
 def graph_to_plain_json(G: nx.DiGraph, admin_level: int = None) -> Dict:
     """
@@ -133,7 +160,10 @@ def graph_to_plain_json(G: nx.DiGraph, admin_level: int = None) -> Dict:
     """
     nodes = []
     for node, data in G.nodes(data=True):
-        if admin_level is None or int(data.get('admin_level', 0)) == admin_level:
+        if (
+            admin_level is None
+            or int(data.get("admin_level", 0)) == admin_level
+        ):
             nodes.append({"id": node, **data})
     return {"nodes": nodes}
 
@@ -213,30 +243,100 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
 
 def main():
     """
-    Main function to read map data, construct a graph, and output a nested or plain JSON structure based on admin level.
+    Main function to process map data and output JSON.
+
+    Accepts command line arguments for input and output file paths, stop level, only level,
+    whether to export plain JSON, and the strategy to select the root node.
+
+    - `--input-file`: Path to the input map file. Default is 'map.osm'.
+    - `--output-file`: Path to the output JSON file. Default is 'map.json'.
+    - `--stop-level`: Set the desired stop level. Cannot be used with --only-level.
+    - `--only-level`: Set the level to exclusively include. Cannot be used with --stop-level.
+    - `--export-plain-json`: Export plain JSON instead of nested JSON.
+    - `--root-select-strategy`: Strategy to select the root node. Default is 'auto'.
+
+    主函数用于读取地图数据，构建图结构，并输出 JSON 文件。
+
+    接受命令行参数，用于指定输入文件路径、输出文件路径、停止级别、仅包含级别、
+    是否导出无层级的JSON，以及选择根节点的策略。
+
+    - `--input-file`：输入地图文件的路径。默认为 'map.osm'。
+    - `--output-file`：输出 JSON 文件的路径。默认为 'map.json'。
+    - `--stop-level`：设置期望的停止级别。不能与 --only-level 同时使用。
+    - `--only-level`：设置要独家包含的级别。不能与 --stop-level 同时使用。
+    - `--export-plain-json`：导出无层级的JSON 而不是嵌套 JSON。
+    - `--root-select-strategy`：选择根节点的策略。默认为 'auto'。
     """
+
+    parser = argparse.ArgumentParser(
+        description="Process map data and output JSON."
+    )
+    parser.add_argument(
+        "--input-file",
+        type=str,
+        default="map.osm",
+        help=i18n_string("input_file_help"),
+    )
+    parser.add_argument(
+        "--output-file",
+        type=str,
+        default="map.json",
+        help=i18n_string("output_file_help"),
+    )
+    parser.add_argument(
+        "--stop-level", type=int, help=i18n_string("stop_level_help")
+    )
+    parser.add_argument(
+        "--only-level", type=int, help=i18n_string("only_level_help")
+    )
+    parser.add_argument(
+        "--export-plain-json",
+        action="store_true",
+        help=i18n_string("export_plain_json_help"),
+    )
+    parser.add_argument(
+        "--root-select-strategy",
+        type=str,
+        default="auto",
+        help=i18n_string("root_select_strategy_help"),
+    )
+    args = parser.parse_args()
+
+    STOP_LEVEL = args.stop_level
+    ONLY_LEVEL = args.only_level
+    EXPORT_PLAIN_JSON = args.export_plain_json
+    ROOT_SELECT_STRATEGY = args.root_select_strategy
+
+    # Check for conflicting arguments
+    if STOP_LEVEL is not None and ONLY_LEVEL is not None:
+        print("Error: STOP_LEVEL and ONLY_LEVEL cannot both be set.")
+        return
+
     map = Waifu()
-    map.read(mode="file", file_path="map.osm")
+    map.read(mode="file", file_path=args.input_file)
     G = build_graph(map)
 
-    # Constants to determine the admin_level cutoff behavior
-    STOP_LEVEL = None  # Set to desired stop level or None
-    ONLY_LEVEL = None  # Set to desired only level or None
-    EXPORT_PLAIN_JSON = False  # Set to True to export plain JSON
-
-    strategy = "auto"
     try:
-        root_id = find_root_node_id(G, strategy)
+        root_id = find_root_node_id(G, ROOT_SELECT_STRATEGY)
         if EXPORT_PLAIN_JSON:
-            json_output = json.dumps(graph_to_plain_json(G, ONLY_LEVEL), indent=2, ensure_ascii=False)
+            json_output = json.dumps(
+                graph_to_plain_json(G, ONLY_LEVEL),
+                indent=2,
+                ensure_ascii=False,
+            )
         else:
-            nested_json = graph_to_nested_json(G, root_id, STOP_LEVEL, ONLY_LEVEL)
+            nested_json = graph_to_nested_json(
+                G, root_id, STOP_LEVEL, ONLY_LEVEL
+            )
             json_output = json.dumps(nested_json, indent=2, ensure_ascii=False)
         print(json_output)
-        with open("map.json", "w", encoding="utf-8") as f:
+        with open(args.output_file, "w", encoding="utf-8") as f:
             f.write(json_output)
     except ValueError as e:
         print(e)
+
+    print(f"JSON output has been written to {args.output_file}")
+
 
 if __name__ == "__main__":
     main()
