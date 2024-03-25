@@ -247,11 +247,49 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
     return root_candidates[0][0]
 
 
-def visualize_graph(G: nx.DiGraph, show: bool = False) -> None:
+def visualize_graph_gv(G: nx.DiGraph, gv_filename: str = "graph.gv") -> None:
     """
-    Visualizes the graph if the 'show' parameter is True. Nodes are sized based on their 'admin_level',
-    with smaller 'admin_level' values resulting in larger nodes. Edges are drawn from nodes with smaller
-    'admin_level' to those with larger 'admin_level'.
+    This function manually generates a Graphviz (.gv) file for the directed graph in a tree or hierarchy style,
+    without using the pygraphviz library. It iterates through the graph's nodes and edges and constructs a .gv
+    file content that represents the graph structure. The node sizes or other visual attributes based on 'admin_level'
+    are not represented in the .gv file and should be adjusted manually if needed when visualizing the .gv file
+    with Graphviz tools.
+
+    Args:
+        G (nx.DiGraph): The directed graph to be represented.
+        gv_filename (str): The filename for the generated Graphviz (.gv) file. Defaults to "graph.gv".
+    """
+
+    # # Need pygraphviz
+    # A = nx.nx_agraph.to_agraph(G)
+    # A.write(gv_filename)
+
+    with open(gv_filename, "w", encoding="utf-8") as f:
+        f.write("digraph G {\n")
+        # Optional: Set graph, node, and edge attributes here
+        # f.write('  node [shape=box];\n')  # Example node attribute
+
+        # Iterate over nodes to add them to the .gv file with formatted labels
+        for node in G.nodes():
+            admin_level = G.nodes[node].get("admin_level", "N/A")
+            name = G.nodes[node].get("name", "Unnamed")
+            label = f"{admin_level}\\n{name}\\n{node}"  # Note: \\n is used for new lines in Graphviz labels
+            f.write(f'  "{node}" [label="{label}"];\n')
+
+        # Iterate over edges to add them to the .gv file
+        for edge in G.edges():
+            f.write(f'  "{edge[0]}" -> "{edge[1]}";\n')
+
+        f.write("}\n")
+
+
+def visualize_graph_plt(G: nx.DiGraph, show: bool = False) -> None:
+    """
+    Visualizes the directed graph in a tree or hierarchy style if the 'show' parameter is True,
+    aiming to minimize node overlap and better represent the structure as a genealogy or tree diagram.
+    Nodes are sized based on their 'admin_level', with smaller 'admin_level' values resulting in larger nodes.
+    This visualization is particularly suitable for graphs with a clear hierarchical structure,
+    ensuring nodes are displayed in levels to avoid the circular layout typical of densely connected graphs.
 
     Args:
         G (nx.DiGraph): The directed graph to visualize.
@@ -259,12 +297,15 @@ def visualize_graph(G: nx.DiGraph, show: bool = False) -> None:
     """
     if show:
         import matplotlib.pyplot as plt
+        import networkx as nx
+        from networkx.drawing.nx_agraph import graphviz_layout
 
-        pos = nx.spring_layout(G)  # Positions for all nodes.
+        # Using graphviz_layout for a tree-style layout
+        pos = graphviz_layout(G, prog="dot")
 
         # Sizes based on admin_level, with a default size for those without admin_level
         sizes = [
-            8000 / (int(G.nodes[node].get("admin_level", 10)) + 1)
+            8000 / (int(G.nodes[node].get("admin_level") or 10) + 1)
             for node in G.nodes()
         ]
 
@@ -372,7 +413,8 @@ def main():
 
     print(i18n_string("json_output").format(output_file=args.output_file))
     if args.visualize:
-        visualize_graph(G, show=True)
+        # visualize_graph_pygraphviz(G, show=True)
+        visualize_graph_gv(G)
 
 
 if __name__ == "__main__":
