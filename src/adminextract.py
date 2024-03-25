@@ -7,6 +7,8 @@ from kqs.waifu import Waifu
 def i18n_string(strid: str):
     if strid == "enter-root-id":
         return "请输入要查询的根关系的id:"
+    if strid == "invalid-admin-level":
+        return "Invalid admin_level value, please input manually."
 
 
 def show_hierarchy(relation_list: List[List[str]]) -> None:
@@ -62,6 +64,12 @@ def get_highest_admin_id(
         highest_admin = []
         for relation in admin_relation:
             if relation[1] != "":
+                try:
+                    int(relation[1])
+                except:
+                    print(i18n_string("invalid-admin-level"))
+                    highest_admin_id = input(i18n_string("enter-root-id"))
+                    continue
                 if int(relation[1]) <= int(highest_admin_value):
                     highest_admin_value = int(relation[1])
                     highest_admin_id = int(relation[0])
