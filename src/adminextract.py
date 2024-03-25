@@ -247,6 +247,32 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
     return root_candidates[0][0]
 
 
+def visualize_graph(G: nx.DiGraph, show: bool = False) -> None:
+    """
+    Visualizes the graph if the 'show' parameter is True. Nodes are sized based on their 'admin_level',
+    with smaller 'admin_level' values resulting in larger nodes. Edges are drawn from nodes with smaller
+    'admin_level' to those with larger 'admin_level'.
+
+    Args:
+        G (nx.DiGraph): The directed graph to visualize.
+        show (bool): If True, the graph will be visualized. Defaults to False.
+    """
+    if show:
+        import matplotlib.pyplot as plt
+
+        pos = nx.spring_layout(G)  # Positions for all nodes.
+
+        # Sizes based on admin_level, with a default size for those without admin_level
+        sizes = [
+            8000 / (int(G.nodes[node].get("admin_level", 10)) + 1)
+            for node in G.nodes()
+        ]
+
+        nx.draw(G, pos, with_labels=True, node_size=sizes, arrows=True)
+
+        plt.show()
+
+
 def main():
     """
     Main function to process map data and output JSON.
@@ -286,6 +312,11 @@ def main():
         type=str,
         default="map.json",
         help=i18n_string("output_file_help"),
+    )
+    parser.add_argument(
+        "--visualize",
+        action="store_true",
+        help="Visualize the graph if set.",
     )
     parser.add_argument(
         "--stop-level", type=int, help=i18n_string("stop_level_help")
@@ -340,6 +371,8 @@ def main():
         print(e)
 
     print(i18n_string("json_output").format(output_file=args.output_file))
+    if args.visualize:
+        visualize_graph(G, show=True)
 
 
 if __name__ == "__main__":
