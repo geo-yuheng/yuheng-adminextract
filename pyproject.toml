@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "yuheng-admininspect"
+version = "2.0.0"
+description = "Read map data and build it into a graph structure, then output nested JSON for use by other programs. 读取地图数据并构建为图结构，并输出嵌套的 JSON 以供其他程序使用。"
+authors = ["快乐的老鼠宝宝 <laoshubaby@protonmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+argparse = "^1.4.0"
+networkx = "^3.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
