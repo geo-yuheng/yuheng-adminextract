@@ -40,6 +40,9 @@ def i18n_string(strid: str) -> str:
             "only_level_help": "Set the level to exclusively include. Cannot be used with --stop-level.",
             "export_plain_json_help": "Export plain JSON instead of nested JSON.",
             "root_select_strategy_help": "Strategy to select the root node. Default is 'auto'.",
+            "description": "Process map data and output JSON.",
+            "error_conflict": "Error: STOP_LEVEL and ONLY_LEVEL cannot both be set.",
+            "json_output": "JSON output has been written to {output_file}.",
         },
         "zh": {
             "enter-root-id": "请输入根节点ID：",
@@ -54,6 +57,9 @@ def i18n_string(strid: str) -> str:
             "only_level_help": "设置仅包含的级别。不能与--stop-level一起使用。",
             "export_plain_json_help": "导出普通JSON而不是嵌套JSON。",
             "root_select_strategy_help": "选择根节点的策略。默认为'auto'。",
+            "description": "处理地图数据并输出JSON。",
+            "error_conflict": "错误：STOP_LEVEL和ONLY_LEVEL不能同时设置。",
+            "json_output": "JSON输出已写入{output_file}。",
         },
     }
     return strings.get(LOCALE, {}).get(strid, "")
@@ -268,9 +274,7 @@ def main():
     - `--root-select-strategy`：选择根节点的策略。默认为 'auto'。
     """
 
-    parser = argparse.ArgumentParser(
-        description="Process map data and output JSON."
-    )
+    parser = argparse.ArgumentParser(description=i18n_string("description"))
     parser.add_argument(
         "--input-file",
         type=str,
@@ -309,7 +313,7 @@ def main():
 
     # Check for conflicting arguments
     if STOP_LEVEL is not None and ONLY_LEVEL is not None:
-        print("Error: STOP_LEVEL and ONLY_LEVEL cannot both be set.")
+        print(i18n_string("error_conflict"))
         return
 
     map = Waifu()
@@ -335,7 +339,7 @@ def main():
     except ValueError as e:
         print(e)
 
-    print(f"JSON output has been written to {args.output_file}")
+    print(i18n_string("json_output").format(output_file=args.output_file))
 
 
 if __name__ == "__main__":
