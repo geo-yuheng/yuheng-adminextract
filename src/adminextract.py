@@ -88,38 +88,54 @@ def build_graph(map: Waifu) -> nx.DiGraph:
     return G
 
 
-def graph_to_nested_json(G: nx.DiGraph, root_id: int) -> Dict:
+def graph_to_nested_json(G: nx.DiGraph, root_id: int, stop_level: int = None, only_level: int = None) -> Dict:
     """
     Converts a directed graph to a nested JSON structure starting from a specified root node.
-
+    Can optionally stop at a specified admin level or only include nodes of a specific admin level.
+    
     Args:
         G (nx.DiGraph): The directed graph to convert.
         root_id (int): The ID of the root node from which to start the nesting.
+        stop_level (int, optional): The administrative level to stop nesting at. Defaults to None.
+        only_level (int, optional): If set, only nodes of this administrative level are included. Defaults to None.
 
     Returns:
         Dict: A nested dictionary representing the hierarchical structure.
-
-    将有向图转换为从指定根节点开始的嵌套 JSON 结构。
-
-    参数:
-        G (nx.DiGraph): 要转换的有向图。
-        root_id (int): 开始嵌套的根节点的 ID。
-
-    返回:
-        Dict: 表示层级结构的嵌套字典。
     """
-
-    def recurse(node):
-        children = list(G.successors(node))
-        if not children:
-            return {"id": node, **G.nodes[node]}
+    def recurse(node, current_level=None):
+        node_data = G.nodes[node]
+        node_level = int(node_data.get('admin_level', 0))
+        if stop_level is not None and node_level >= stop_level:
+            return {"id": node, **node_data}
+        if only_level is not None and node_level != only_level:
+            return None
+        children = [recurse(child, node_level) for child in G.successors(node)]
+        children = [child for child in children if child is not None]
+        if not children and (only_level is None or node_level == only_level):
+            return {"id": node, **node_data}
         return {
             "id": node,
-            **G.nodes[node],
-            "subareas": [recurse(child) for child in children],
+            **node_data,
+            "subareas": children,
         }
-
     return recurse(root_id)
+
+def graph_to_plain_json(G: nx.DiGraph, admin_level: int = None) -> Dict:
+    """
+    Converts a directed graph to a plain JSON structure, optionally filtering by admin level.
+
+    Args:
+        G (nx.DiGraph): The directed graph to convert.
+        admin_level (int, optional): If set, only nodes of this administrative level are included. Defaults to None.
+
+    Returns:
+        Dict: A dictionary representing the nodes in a flat structure.
+    """
+    nodes = []
+    for node, data in G.nodes(data=True):
+        if admin_level is None or int(data.get('admin_level', 0)) == admin_level:
+            nodes.append({"id": node, **data})
+    return {"nodes": nodes}
 
 
 def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
@@ -197,27 +213,30 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
 
 def main():
     """
-    Main function to read map data, construct a graph, and output a nested JSON structure.
-
-    主函数用于读取地图数据，构建图结构，并输出嵌套的 JSON 结构。
+    Main function to read map data, construct a graph, and output a nested or plain JSON structure based on admin level.
     """
     map = Waifu()
-    map.read(mode="file", file_path="map.osm")  # Assuming this reads map data
+    map.read(mode="file", file_path="map.osm")
     G = build_graph(map)
 
-    strategy = "auto"  # Can be "auto", "input", "highest"
+    # Constants to determine the admin_level cutoff behavior
+    STOP_LEVEL = None  # Set to desired stop level or None
+    ONLY_LEVEL = None  # Set to desired only level or None
+    EXPORT_PLAIN_JSON = False  # Set to True to export plain JSON
+
+    strategy = "auto"
     try:
-        root_id = find_root_node_id(
-            G, strategy
-        )  # Find the root node ID based on strategy
-        nested_json = graph_to_nested_json(G, root_id)
-        json_output = json.dumps(nested_json, indent=2, ensure_ascii=False)
+        root_id = find_root_node_id(G, strategy)
+        if EXPORT_PLAIN_JSON:
+            json_output = json.dumps(graph_to_plain_json(G, ONLY_LEVEL), indent=2, ensure_ascii=False)
+        else:
+            nested_json = graph_to_nested_json(G, root_id, STOP_LEVEL, ONLY_LEVEL)
+            json_output = json.dumps(nested_json, indent=2, ensure_ascii=False)
         print(json_output)
         with open("map.json", "w", encoding="utf-8") as f:
             f.write(json_output)
     except ValueError as e:
         print(e)
-
 
 if __name__ == "__main__":
     main()
