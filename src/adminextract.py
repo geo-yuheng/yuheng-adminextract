@@ -314,6 +314,22 @@ def visualize_graph_plt(G: nx.DiGraph, show: bool = False) -> None:
         plt.show()
 
 
+def prune_graph_to_root(G: nx.DiGraph, root_id: int) -> nx.DiGraph:
+    """
+    修改图G，使其只包含与根节点联通的节点。
+    这个函数首先找到所有从根节点可达的节点，然后移除所有不可达的节点。
+
+    :param G: 原始图。
+    :param root_id: 根节点的ID。
+    :return: 修改后的图。
+    """
+    reachable = set(nx.descendants(G, root_id)) | {root_id}
+    for node in list(G.nodes):
+        if node not in reachable:
+            G.remove_node(node)
+    return G
+
+
 def main():
     """
     Main function to process map data and output JSON.
@@ -340,7 +356,6 @@ def main():
     - `--export-plain-json`：导出无层级的JSON 而不是嵌套 JSON。
     - `--root-select-strategy`：选择根节点的策略。默认为 'auto'。
     """
-
     parser = argparse.ArgumentParser(description=i18n_string("description"))
     parser.add_argument(
         "--input-file",
@@ -355,9 +370,11 @@ def main():
         help=i18n_string("output_file_help"),
     )
     parser.add_argument(
-        "--visualize",
-        action="store_true",
-        help="Visualize the graph if set.",
+        "--output-format",
+        type=str,
+        default="json",
+        choices=["json", "gv"],
+        help="Output format: json or gv.",
     )
     parser.add_argument(
         "--stop-level", type=int, help=i18n_string("stop_level_help")
@@ -366,9 +383,9 @@ def main():
         "--only-level", type=int, help=i18n_string("only_level_help")
     )
     parser.add_argument(
-        "--export-plain-json",
+        "--ensure-connected",
         action="store_true",
-        help=i18n_string("export_plain_json_help"),
+        help="Ensure all nodes are connected to the root node.",
     )
     parser.add_argument(
         "--root-select-strategy",
@@ -378,13 +395,7 @@ def main():
     )
     args = parser.parse_args()
 
-    STOP_LEVEL = args.stop_level
-    ONLY_LEVEL = args.only_level
-    EXPORT_PLAIN_JSON = args.export_plain_json
-    ROOT_SELECT_STRATEGY = args.root_select_strategy
-
-    # Check for conflicting arguments
-    if STOP_LEVEL is not None and ONLY_LEVEL is not None:
+    if args.stop_level is not None and args.only_level is not None:
         print(i18n_string("error_conflict"))
         return
 
@@ -392,28 +403,24 @@ def main():
     map.read(mode="file", file_path=args.input_file)
     G = build_graph(map)
 
-    try:
-        root_id = find_root_node_id(G, ROOT_SELECT_STRATEGY)
-        if EXPORT_PLAIN_JSON:
-            json_output = json.dumps(
-                graph_to_plain_json(G, ONLY_LEVEL),
-                indent=2,
-                ensure_ascii=False,
-            )
-        else:
-            nested_json = graph_to_nested_json(
-                G, root_id, STOP_LEVEL, ONLY_LEVEL
-            )
-            json_output = json.dumps(nested_json, indent=2, ensure_ascii=False)
-        print(json_output)
+    print(args.output_format)
+
+    if args.ensure_connected:
+        root_id = find_root_node_id(G, args.root_select_strategy)
+        G = prune_graph_to_root(G, root_id)
+
+    if args.output_format == "json":
+        if args.ensure_connected:
+            root_id = find_root_node_id(G, args.root_select_strategy)
+        json_output = json.dumps(
+            graph_to_nested_json(G, root_id, args.stop_level, args.only_level),
+            indent=2,
+            ensure_ascii=False,
+        )
         with open(args.output_file, "w", encoding="utf-8") as f:
             f.write(json_output)
-    except ValueError as e:
-        print(e)
-
-    print(i18n_string("json_output").format(output_file=args.output_file))
-    if args.visualize:
-        # visualize_graph_pygraphviz(G, show=True)
+    elif args.output_format == "gv":
+        print("1111111111")
         visualize_graph_gv(G)
 
 
