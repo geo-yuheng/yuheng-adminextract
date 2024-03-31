@@ -2,7 +2,7 @@ import networkx as nx
 import json
 import argparse
 from typing import Dict
-from kqs.waifu import Waifu
+from yuheng import Carto
 
 LOCALE = "zh"
 
@@ -65,14 +65,14 @@ def i18n_string(strid: str) -> str:
     return strings.get(LOCALE, {}).get(strid, "")
 
 
-def build_graph(map: Waifu) -> nx.DiGraph:
+def build_graph(world: Carto) -> nx.DiGraph:
     """
     Constructs a directed graph from map data.
 
     Each administrative boundary from the map is added as a node, and subarea relationships are added as edges.
 
     Args:
-        map (Waifu): An instance of Waifu containing map data.
+        world (Carto): An instance of Carto containing map data.
 
     Returns:
         nx.DiGraph: A directed graph representing the administrative hierarchy.
@@ -82,14 +82,14 @@ def build_graph(map: Waifu) -> nx.DiGraph:
     地图中的每个行政边界都作为一个节点添加，子区域关系作为边缘添加。
 
     参数:
-        map (Waifu): 包含地图数据的 Waifu 实例。
+        world (Carto): 包含地图数据的 Carto 实例。
 
     返回:
         nx.DiGraph: 表示行政层级的有向图。
     """
 
     G = nx.DiGraph()
-    for id, relation in map.relation_dict.items():
+    for id, relation in world.relation_dict.items():
         admin_level = relation.tags.get("admin_level")
         name = relation.tags.get("name")
         ref = relation.tags.get("ref")
@@ -101,7 +101,7 @@ def build_graph(map: Waifu) -> nx.DiGraph:
             for member in relation.members:
                 if (
                     member.role == "subarea"
-                    and member.ref in map.relation_dict
+                    and member.ref in world.relation_dict
                 ):
                     G.add_edge(id, member.ref)
     return G
@@ -399,11 +399,11 @@ def main():
         print(i18n_string("error_conflict"))
         return
 
-    map = Waifu()
-    map.read(mode="file", file_path=args.input_file)
-    G = build_graph(map)
+    world = Carto()
+    world.read(mode="file", file_path=args.input_file)
+    G = build_graph(world)
 
-    print(args.output_format)
+    print("args.output_format =",args.output_format)
 
     if args.ensure_connected:
         root_id = find_root_node_id(G, args.root_select_strategy)
@@ -420,7 +420,6 @@ def main():
         with open(args.output_file, "w", encoding="utf-8") as f:
             f.write(json_output)
     elif args.output_format == "gv":
-        print("1111111111")
         visualize_graph_gv(G)
 
 
