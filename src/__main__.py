@@ -101,9 +101,15 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
 
     if not root_candidates:
         if strategy == "highest":
-            raise ValueError(i18n_string("error.find_root_node_id.no_root_node_found"))
+            raise ValueError(
+                i18n_string("error.find_root_node_id.no_root_node_found")
+            )
         elif strategy == "auto":
-            return int(input(i18n_string("prompt.find_root_node_id.manual_root_node_id")))
+            return int(
+                input(
+                    i18n_string("prompt.find_root_node_id.manual_root_node_id")
+                )
+            )
 
     if len(root_candidates) > 1:
         print(i18n_string("prompt.find_root_node_id.multiple_root_nodes"))
@@ -115,13 +121,21 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
         node_ids = [node for node, _ in root_candidates]
         while True:
             try:
-                input_id = int(input(i18n_string("prompt.find_root_node_id.root_node_id")))
+                input_id = int(
+                    input(i18n_string("prompt.find_root_node_id.root_node_id"))
+                )
                 if input_id in node_ids:
                     return input_id
                 else:
-                    print(i18n_string("error.find_root_node_id.error_invalid_node_id"))
+                    print(
+                        i18n_string(
+                            "error.find_root_node_id.error_invalid_node_id"
+                        )
+                    )
             except ValueError:
-                print(i18n_string("error.find_root_node_id.error_invalid_number"))
+                print(
+                    i18n_string("error.find_root_node_id.error_invalid_number")
+                )
 
     return root_candidates[0][0]
 
@@ -158,7 +172,9 @@ def main():
         --ensure-connected: bool, 如果设置，确保所有节点都与根节点相连。默认未设置。
         --root-select-strategy: str, 选择根节点的策略。默认为 'auto'。
     """
-    parser = argparse.ArgumentParser(description=i18n_string("description.main.app_function"))
+    parser = argparse.ArgumentParser(
+        description=i18n_string("description.main.app_function")
+    )
     parser.add_argument(
         "--input-file",
         type=str,
