@@ -37,6 +37,7 @@ def i18n_string(strid: str) -> str:
             "description": "Process map data and output JSON.",
             "error_conflict": "Error: STOP_LEVEL and ONLY_LEVEL cannot both be set.",
             "json_output": "JSON output has been written to {output_file}.",
+            "wrong-vis-method": "Invalid visualization method. Choose 'plt' or 'gv'.",
         },
         "zh": {
             "enter-root-id": "请输入根节点ID：",
@@ -54,6 +55,7 @@ def i18n_string(strid: str) -> str:
             "description": "处理地图数据并输出JSON。",
             "error_conflict": "错误：STOP_LEVEL和ONLY_LEVEL不能同时设置。",
             "json_output": "JSON输出已写入{output_file}。",
+            "wrong-vis-method": "无效的可视化方法。请选择'plt'或'gv'。",
         },
     }
     return strings.get(LOCALE, {}).get(strid, "")

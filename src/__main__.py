@@ -1,13 +1,16 @@
-import networkx as nx
-import json
 import argparse
+import json
+
+import networkx as nx
 from yuheng import Carto
 
 from localization import i18n_string
-from prune import prune_graph_to_root, prune_graph_to_level
-from transform import graph_to_nested_json, graph_to_plain_json, visualize_graph
-
-
+from prune import prune_graph_to_level, prune_graph_to_root
+from transform import (
+    graph_to_nested_json,
+    graph_to_plain_json,
+    visualize_graph,
+)
 
 
 def build_graph(world: Carto) -> nx.DiGraph:
