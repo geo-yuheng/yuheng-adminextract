@@ -107,18 +107,13 @@ def build_graph(world: Carto) -> nx.DiGraph:
     return G
 
 
-def graph_to_nested_json(
-    G: nx.DiGraph, root_id: int, stop_level: int = None, only_level: int = None
-) -> Dict:
+def graph_to_nested_json(G: nx.DiGraph, root_id: int) -> Dict:
     """
     Converts a directed graph to a nested JSON structure starting from a specified root node.
-    Can optionally stop at a specified admin level or only include nodes of a specific admin level.
 
     Args:
         G (nx.DiGraph): The directed graph to convert.
         root_id (int): The ID of the root node from which to start the nesting.
-        stop_level (int, optional): The administrative level to stop nesting at. Defaults to None.
-        only_level (int, optional): If set, only nodes of this administrative level are included. Defaults to None.
 
     Returns:
         Dict: A nested dictionary representing the hierarchical structure.
@@ -133,17 +128,10 @@ def graph_to_nested_json(
         Dict: 表示层级结构的嵌套字典。
     """
 
-    def recurse(node, current_level=None):
+    def recurse(node):
         node_data = G.nodes[node]
-        node_level = int(node_data.get("admin_level", 0))
-        if stop_level is not None and node_level >= stop_level:
-            return {"id": node, **node_data}
-        if only_level is not None and node_level != only_level:
-            return None
-        children = [recurse(child, node_level) for child in G.successors(node)]
+        children = [recurse(child) for child in G.successors(node)]
         children = [child for child in children if child is not None]
-        if not children and (only_level is None or node_level == only_level):
-            return {"id": node, **node_data}
         return {
             "id": node,
             **node_data,
@@ -311,6 +299,40 @@ def prune_graph_to_root(G: nx.DiGraph, root_id: int) -> nx.DiGraph:
     return G
 
 
+def prune_graph_to_level(
+    G: nx.DiGraph, stop_level: int = None, only_level: int = None
+) -> nx.DiGraph:
+    """
+    Prunes the graph G based on the stop_level and only_level parameters.
+
+    Args:
+        G (nx.DiGraph): The original graph.
+        stop_level (int, optional): The administrative level to stop pruning at. Defaults to None.
+        only_level (int, optional): If set, only nodes of this administrative level are included. Defaults to None.
+
+    Returns:
+        nx.DiGraph: The pruned graph.
+    """
+    if stop_level is not None and only_level is not None:
+        print(i18n_string("error_conflict"))
+
+    nodes_to_remove = []
+    for node, data in G.nodes(data=True):
+        admin_level = data.get("admin_level")
+        if admin_level is None:
+            continue
+        level = int(admin_level)
+        if stop_level is not None and level > stop_level:
+            nodes_to_remove.append(node)
+        elif only_level is not None and level != only_level:
+            nodes_to_remove.append(node)
+
+    for node in nodes_to_remove:
+        G.remove_node(node)
+
+    return G
+
+
 def main():
     """
     Main function to process map data and output JSON.
@@ -386,10 +408,6 @@ def main():
     EXPORT_PLAIN_JSON = args.export_plain_json
     ROOT_SELECT_STRATEGY = args.root_select_strategy
 
-    if args.stop_level is not None and args.only_level is not None:
-        print(i18n_string("error_conflict"))
-        return
-
     world = Carto()
     world.read(mode="file", file_path=args.input_file)
     G = build_graph(world)
@@ -399,6 +417,8 @@ def main():
     root_id = find_root_node_id(G, ROOT_SELECT_STRATEGY)
     if args.ensure_connected:
         G = prune_graph_to_root(G, root_id)
+    if STOP_LEVEL is not None or ONLY_LEVEL is not None:
+        G = prune_graph_to_level(G, STOP_LEVEL, ONLY_LEVEL)
 
     if args.output_format == "json":
         try:
