@@ -198,35 +198,30 @@ def main():
     )
     args = parser.parse_args()
 
-    STOP_LEVEL = args.stop_level
-    ONLY_LEVEL = args.only_level
-    EXPORT_PLAIN_JSON = args.export_plain_json
-    ROOT_SELECT_STRATEGY = args.root_select_strategy
-
     world = Carto()
     world.read(mode="file", file_path=args.input_file)
     G = build_graph(world)
 
     print("args.output_format =", args.output_format)
 
-    root_id = find_root_node_id(G, ROOT_SELECT_STRATEGY)
+    root_id = find_root_node_id(G, args.root_select_strategy)
 
     if args.ensure_connected:
         G = prune_graph_to_root(G, root_id)
-    if STOP_LEVEL is not None or ONLY_LEVEL is not None:
-        G = prune_graph_to_level(G, STOP_LEVEL, ONLY_LEVEL)
+    if args.stop_level is not None or args.only_level is not None:
+        G = prune_graph_to_level(G, args.stop_level, args.only_level)
 
     if args.output_format == "json":
         try:
-            if EXPORT_PLAIN_JSON:
+            if args.export_plain_json:
                 json_output = json.dumps(
-                    graph_to_plain_json(G, ONLY_LEVEL),
+                    graph_to_plain_json(G, args.only_level),
                     indent=2,
                     ensure_ascii=False,
                 )
             else:
                 json_output = json.dumps(
-                    graph_to_nested_json(G, root_id, STOP_LEVEL, ONLY_LEVEL),
+                    graph_to_nested_json(G, root_id, args.stop_level, args.only_level),
                     indent=2,
                     ensure_ascii=False,
                 )
