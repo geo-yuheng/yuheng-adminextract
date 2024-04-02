@@ -41,6 +41,9 @@ def i18n_string(strid: str) -> str:
             "error_conflict": "Error: STOP_LEVEL and ONLY_LEVEL cannot both be set.",
             "json_output": "JSON output has been written to {output_file}.",
             "wrong-vis-method": "Invalid visualization method. Choose 'plt' or 'gv'.",
+            "output_format_help": "Output format: json or gv.",
+            "ensure_connected_help": "Ensure all nodes are connected to the root node.",
+            "error_exception": "An error occurred: {error_message}",
         },
         "zh": {
             "enter-root-id": "请输入根节点ID：",
@@ -59,6 +62,9 @@ def i18n_string(strid: str) -> str:
             "error_conflict": "错误：STOP_LEVEL和ONLY_LEVEL不能同时设置。",
             "json_output": "JSON输出已写入{output_file}。",
             "wrong-vis-method": "无效的可视化方法。请选择'plt'或'gv'。",
+            "output_format_help": "指定输出格式：json 或 gv。",
+            "ensure_connected_help": "确保所有节点都与根节点相连。",
+            "error_exception": "发生错误：{error_message}",
         },
     }
     return strings.get(LOCALE, {}).get(strid, "")

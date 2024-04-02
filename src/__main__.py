@@ -176,8 +176,9 @@ def main():
         type=str,
         default="json",
         choices=["json", "gv"],
-        help="Output format: json or gv.",
+        help=i18n_string("output_format_help"),
     )
+
     parser.add_argument(
         "--json-schema",
         type=str,
@@ -194,7 +195,7 @@ def main():
     parser.add_argument(
         "--ensure-connected",
         action="store_true",
-        help="Ensure all nodes are connected to the root node.",
+        help=i18n_string("ensure_connected_help"),
     )
     parser.add_argument(
         "--root-select-strategy",
@@ -243,7 +244,7 @@ def main():
         except Exception as e:
             print(e)
     elif args.output_format == "gv":
-        visualize_graph(G, method="gv", gv_filename="my_graph.gv")
+        visualize_graph(G, method="gv", gv_filename=args.output_file)
 
 
 if __name__ == "__main__":
