@@ -15,7 +15,7 @@ def load_localization_strings() -> Dict[str, Any]:
 
     Returns:
         A dictionary containing the localized strings.
-    
+
     从JSON文件加载本地化字符串。
 
     此函数从磁盘读取一个JSON文件，并将其解析为字典。用于加载本地化字符串，以支持国际化。
@@ -47,7 +47,7 @@ def i18n_string(strid: str) -> str:
 
     Returns:
         A localized string corresponding to the given ID or a default message if the ID is not found.
-    
+
     根据给定的字符串ID返回本地化字符串。
 
     此函数使用其唯一字符串标识符查找文本字符串的本地化版本。对于支持多种语言的应用程序中的国际化（i18n）非常有用。如果未找到字符串ID，则返回当前语言环境的默认消息。

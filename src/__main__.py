@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 
 import networkx as nx
 from yuheng import Carto
@@ -260,7 +261,12 @@ def main():
         except Exception as e:
             print(e)
     elif args.output_format == "gv":
-        visualize_graph(G, method="gv", gv_filename=args.output_file)
+        output_file_name = (
+            os.path.splitext(args.output_file)[0] + ".gv"
+            if os.path.splitext(args.output_file)[1].lower() == ".json"
+            else args.output_file
+        )
+        visualize_graph(G, method="gv", gv_filename=output_file_name)
 
 
 if __name__ == "__main__":
