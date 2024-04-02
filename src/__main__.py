@@ -221,7 +221,9 @@ def main():
                 )
             else:
                 json_output = json.dumps(
-                    graph_to_nested_json(G, root_id, args.stop_level, args.only_level),
+                    graph_to_nested_json(
+                        G, root_id, args.stop_level, args.only_level
+                    ),
                     indent=2,
                     ensure_ascii=False,
                 )

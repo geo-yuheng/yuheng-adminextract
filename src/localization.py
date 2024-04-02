@@ -2,22 +2,25 @@ LOCALE = "zh"
 
 
 def i18n_string(strid: str) -> str:
-    """
-    Returns localized strings based on the given string ID.
+    """Returns a localized string based on the given string ID.
+
+    This function looks up a localized version of a text string using its unique string identifier. It's useful for internationalization (i18n) in applications that support multiple languages.
 
     Args:
-        strid (str): A string identifier for the desired text.
+        strid: A string identifier for the desired text.
 
     Returns:
-        str: A localized string corresponding to the given ID.
+        A localized string corresponding to the given ID.
 
     根据给定的字符串 ID 返回本地化字符串。
 
+    该函数使用其唯一字符串标识符查找文本字符串的本地化版本。它适用于支持多种语言的应用程序中的国际化（i18n）。
+
     参数:
-        strid (str): 所需文本的字符串标识符。
+        strid: 所需文本的字符串标识符。
 
     返回:
-        str: 与给定 ID 对应的本地化字符串。
+        与给定 ID 对应的本地化字符串。
     """
 
     strings = {

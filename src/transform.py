@@ -14,11 +14,11 @@ def graph_to_nested_json(G: nx.DiGraph, root_id: int) -> Dict:
     dictionary contains an ID, any additional data stored in the node, and a list of its children.
 
     Args:
-        G (nx.DiGraph): The directed graph to convert.
-        root_id (int): The ID of the root node from which to start the nesting.
+        G: The directed graph to convert.
+        root_id: The ID of the root node from which to start the nesting.
 
     Returns:
-        Dict: A nested dictionary representing the hierarchical structure of the graph.
+        A nested dictionary representing the hierarchical structure of the graph.
 
     将有向图转换为从指定根节点开始的嵌套 JSON 结构。
 
@@ -26,11 +26,11 @@ def graph_to_nested_json(G: nx.DiGraph, root_id: int) -> Dict:
     存储在节点中的任何附加数据以及其子节点的列表。
 
     参数:
-        G (nx.DiGraph): 要转换的有向图。
-        root_id (int): 开始嵌套的根节点的 ID。
+        G: 要转换的有向图。
+        root_id: 开始嵌套的根节点的 ID。
 
     返回:
-        Dict: 表示图的层级结构的嵌套字典。
+        表示图的层级结构的嵌套字典。
     """
 
     def recurse(node):
@@ -55,22 +55,22 @@ def graph_to_plain_json(G: nx.DiGraph, admin_level: int = None) -> Dict:
     and any associated data.
 
     Args:
-        G (nx.DiGraph): The directed graph to convert.
-        admin_level (int, optional): If set, only nodes of this administrative level are included. Defaults to None.
+        G: The directed graph to convert.
+        admin_level: Optional, If set, only nodes of this administrative level are included. Defaults to None.
 
     Returns:
-        Dict: A dictionary representing the nodes in a flat structure.
+        A dictionary representing the nodes in a flat structure.
 
-    将有向图转换为平面 JSON 结构，可选择按行政级别过滤。
+    将有向图转换为平铺 JSON 结构，可选择按行政级别过滤。
 
-    该函数遍历图中的所有节点，可选择按行政级别过滤，然后将这些节点编译成一个平面 JSON 结构的列表。列表中的每个节点包含其 ID 和任何关联的数据。
+    该函数遍历图中的所有节点，可选择按行政级别过滤，然后将这些节点编译成一个平铺 JSON 结构的列表。列表中的每个节点包含其 ID 和任何关联的数据。
 
     参数:
-        G (nx.DiGraph): 要转换的有向图。
-        admin_level (int, 可选): 如果设置，只包括此行政级别的节点。默认为 None。
+        G: 要转换的有向图。
+        admin_level: 可选, 如果设置，只包括此行政级别的节点。默认为 None。
 
     返回:
-        Dict: 以平面结构表示的节点的字典。
+        以平铺结构表示的节点的字典。
     """
     nodes = []
     for node, data in G.nodes(data=True):
@@ -88,18 +88,20 @@ def visualize_graph(
     gv_filename: str = "graph.gv",
     show: bool = False,
 ) -> None:
-    """
-    Visualizes the directed graph using either matplotlib (plt) or Graphviz (gv).
+    """Visualizes the directed graph using either matplotlib (plt) or Graphviz (gv).
 
     This function supports two visualization methods: matplotlib for inline plotting and Graphviz for generating
     .gv files that can be further processed or viewed with Graphviz tools. The visualization method can be chosen
     with the 'method' parameter. For matplotlib, if 'show' is True, the graph will be displayed immediately.
 
     Args:
-        G (nx.DiGraph): The directed graph to visualize.
-        method (str): The visualization method to use ('plt' for matplotlib, 'gv' for Graphviz). Defaults to 'gv'.
-        gv_filename (str): The filename for the generated Graphviz (.gv) file. Only relevant if method is 'gv'. Defaults to "graph.gv".
-        show (bool): If True and method is 'plt', the graph will be visualized immediately. Defaults to False.
+        G: The directed graph to visualize.
+        method: Optional, The visualization method to use ('plt' for matplotlib, 'gv' for Graphviz). Defaults to 'gv'.
+        gv_filename: Optional, The filename for the generated Graphviz (.gv) file. Only relevant if method is 'gv'. Defaults to "graph.gv".
+        show: Optional, If True and method is 'plt', the graph will be visualized immediately. Defaults to False.
+
+    Raises:
+        ValueError: If an invalid visualization method is provided.
 
     使用 matplotlib (plt) 或 Graphviz (gv) 可视化有向图。
 
@@ -107,10 +109,13 @@ def visualize_graph(
     可使用 'method' 参数选择可视化方法。对于 matplotlib，如果 'show' 为 True，则图形将立即显示。
 
     参数:
-        G (nx.DiGraph): 要可视化的有向图。
-        method (str): 要使用的可视化方法（'plt' 用于 matplotlib，'gv' 用于 Graphviz）。 默认为 'gv'。
-        gv_filename (str): 生成的 Graphviz (.gv) 文件的文件名。仅当方法为 'gv' 时相关。 默认为 "graph.gv"。
-        show (bool): 如果为 True 且方法为 'plt'，则图形将立即可视化。默认为 False。
+        G: 要可视化的有向图。
+        method: 可选, 要使用的可视化方法（'plt' 用于 matplotlib，'gv' 用于 Graphviz）。 默认为 'gv'。
+        gv_filename: 可选, 生成的 Graphviz (.gv) 文件的文件名。仅当方法为 'gv' 时相关。 默认为 "graph.gv"。
+        show: 可选, 如果为 True 且方法为 'plt'，则图形将立即可视化。默认为 False。
+
+    异常:
+        ValueError: 如果提供了无效的可视化方法。
     """
 
     if method == "plt":
