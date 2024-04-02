@@ -14,26 +14,25 @@ from transform import (
 
 
 def build_graph(world: Carto) -> nx.DiGraph:
-    """
-    Constructs a directed graph from map data.
+    """Constructs a directed graph from map data.
 
     Each administrative boundary from the map is added as a node, and subarea relationships are added as edges.
 
     Args:
-        world (Carto): An instance of Carto containing map data.
+        world: An instance of Carto containing map data.
 
     Returns:
-        nx.DiGraph: A directed graph representing the administrative hierarchy.
+        A directed graph representing the administrative hierarchy.
 
     根据地图数据构建有向图。
 
     地图中的每个行政边界都作为一个节点添加，子区域关系作为边缘添加。
 
     参数:
-        world (Carto): 包含地图数据的 Carto 实例。
+        world: 包含地图数据的 Carto 实例。
 
     返回:
-        nx.DiGraph: 表示行政层级的有向图。
+        表示行政层级的有向图。
     """
 
     G = nx.DiGraph()
@@ -56,15 +55,14 @@ def build_graph(world: Carto) -> nx.DiGraph:
 
 
 def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
-    """
-    Finds the ID of the root node based on the given strategy.
+    """Finds the ID of the root node based on the given strategy.
 
     Args:
-        G (nx.DiGraph): The directed graph from which to find the root node.
-        strategy (str): The strategy to use for finding the root node. Options are "input", "highest", "auto".
+        G: The directed graph from which to find the root node.
+        strategy: The strategy to use for finding the root node. Options are "input", "highest", "auto".
 
     Returns:
-        int: The ID of the found root node.
+        The ID of the found root node.
 
     Raises:
         ValueError: If no root node can be found based on the given strategy.
@@ -72,13 +70,13 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
     根据给定策略找到根节点的 ID。
 
     参数:
-        G (nx.DiGraph): 用于查找根节点的有向图。
-        strategy (str): 用于查找根节点的策略。选项包括 "input"、"highest"、"auto"。
+        G: 用于查找根节点的有向图。
+        strategy: 用于查找根节点的策略。选项包括 "input"、"highest"、"auto"。
 
     返回:
-        int: 找到的根节点的 ID。
+        找到的根节点的 ID。
 
-    引发:
+    异常:
         ValueError: 如果根据给定策略找不到根节点。
     """
 
@@ -129,30 +127,36 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
 
 
 def main():
-    """
-    Main function to process map data and output JSON.
+    """Processes map data and outputs it as JSON or Graphviz file.
 
-    Accepts command line arguments for input and output file paths, stop level, only level,
-    whether to export plain JSON, and the strategy to select the root node.
+    This function accepts command line arguments to specify input and output file paths,
+    output format, stop level, only level, connection enforcement, export format, and
+    the strategy for root node selection.
 
-    - `--input-file`: Path to the input map file. Default is 'map.osm'.
-    - `--output-file`: Path to the output JSON file. Default is 'map.json'.
-    - `--stop-level`: Set the desired stop level. Cannot be used with --only-level.
-    - `--only-level`: Set the level to exclusively include. Cannot be used with --stop-level.
-    - `--export-plain-json`: Export plain JSON instead of nested JSON.
-    - `--root-select-strategy`: Strategy to select the root node. Default is 'auto'.
+    Args:
+        --input-file: str, Path to the input map file. Defaults to 'map.osm'.
+        --output-file: str, Path to the output file, either JSON or Graphviz format. Defaults to 'map.json'.
+        --output-format: str, Specifies the output format. Choices are 'json' or 'gv'. Defaults to 'json'.
+        --stop-level: int, Specifies the stop level for processing. Incompatible with --only-level.
+        --only-level: int, Specifies a single level to include in the output. Incompatible with --stop-level.
+        --ensure-connected: bool, If set, ensures all nodes are connected to the root node. Not set by default.
+        --export-plain-json: bool, If set, exports data in plain JSON format instead of nested. Not set by default.
+        --root-select-strategy: str, Strategy to select the root node. Defaults to 'auto'.
 
-    主函数用于读取地图数据，构建图结构，并输出 JSON 文件。
+    主要功能是读取地图数据，构建图结构，并根据指定的参数输出 JSON 文件或 Graphviz 文件。
 
-    接受命令行参数，用于指定输入文件路径、输出文件路径、停止级别、仅包含级别、
-    是否导出无层级的JSON，以及选择根节点的策略。
+    接受的命令行参数用于指定输入文件路径、输出文件路径、输出格式、停止级别、仅包含级别、
+    是否确保所有节点与根节点相连、是否导出无层级的JSON，以及选择根节点的策略。
 
-    - `--input-file`：输入地图文件的路径。默认为 'map.osm'。
-    - `--output-file`：输出 JSON 文件的路径。默认为 'map.json'。
-    - `--stop-level`：设置期望的停止级别。不能与 --only-level 同时使用。
-    - `--only-level`：设置要独家包含的级别。不能与 --stop-level 同时使用。
-    - `--export-plain-json`：导出无层级的JSON 而不是嵌套 JSON。
-    - `--root-select-strategy`：选择根节点的策略。默认为 'auto'。
+    参数:
+        --input-file: str, 输入地图文件的路径。默认为 'map.osm'。
+        --output-file: str, 输出文件的路径，可以是 JSON 格式或 Graphviz 格式。默认为 'map.json'。
+        --output-format: str, 指定输出格式。选项为 'json' 或 'gv'。默认为 'json'.
+        --stop-level: int, 指定处理的停止级别。与 --only-level 不兼容。
+        --only-level: int, 指定要在输出中仅包含的级别。与 --stop-level 不兼容。
+        --ensure-connected: bool, 如果设置，确保所有节点都与根节点相连。默认未设置。
+        --export-plain-json: bool, 如果设置，以平面 JSON 格式而非嵌套格式导出数据。默认 未设置。
+        --root-select-strategy: str, 选择根节点的策略。默认为 'auto'。
     """
     parser = argparse.ArgumentParser(description=i18n_string("description"))
     parser.add_argument(
