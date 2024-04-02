@@ -147,4 +147,4 @@ def visualize_graph(
             f.write("}\n")
 
     else:
-        raise ValueError(i18n_string("wrong-vis-method"))
+        raise ValueError(i18n_string("error.visualize_graph.invalid_method"))

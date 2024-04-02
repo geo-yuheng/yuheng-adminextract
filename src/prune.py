@@ -60,7 +60,7 @@ def prune_graph_to_level(
         被修剪后的图。
     """
     if stop_level is not None and only_level is not None:
-        print(i18n_string("error_conflict"))
+        print(i18n_string("error.main.conflict_stop_level_and_only_level"))
 
     nodes_to_remove = []
     for node, data in G.nodes(data=True):

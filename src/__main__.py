@@ -81,7 +81,7 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
     """
 
     if strategy == "input":
-        return int(input(i18n_string("enter-root-id")))
+        return int(input(i18n_string("prompt.find_root_node_id.root_node_id")))
 
     min_level = float("inf")
     root_candidates = []
@@ -101,12 +101,12 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
 
     if not root_candidates:
         if strategy == "highest":
-            raise ValueError(i18n_string("no-root-found"))
+            raise ValueError(i18n_string("error.find_root_node_id.no_root_node_found"))
         elif strategy == "auto":
-            return int(input(i18n_string("enter-manual-root-id")))
+            return int(input(i18n_string("prompt.find_root_node_id.manual_root_node_id")))
 
     if len(root_candidates) > 1:
-        print(i18n_string("multiple-root-nodes"))
+        print(i18n_string("prompt.find_root_node_id.multiple_root_nodes"))
         for idx, (node, data) in enumerate(root_candidates):
             print(
                 f"({idx + 1}). ID: [{node}], \"admin_level\": {data['admin_level']}, \"name\": {data.get('name')}, \"ref\": {data.get('ref')}"
@@ -115,13 +115,13 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
         node_ids = [node for node, _ in root_candidates]
         while True:
             try:
-                input_id = int(input(i18n_string("enter-root-id")))
+                input_id = int(input(i18n_string("prompt.find_root_node_id.root_node_id")))
                 if input_id in node_ids:
                     return input_id
                 else:
-                    print(i18n_string("invalid-id"))
+                    print(i18n_string("error.find_root_node_id.error_invalid_node_id"))
             except ValueError:
-                print(i18n_string("enter-valid-number"))
+                print(i18n_string("error.find_root_node_id.error_invalid_number"))
 
     return root_candidates[0][0]
 
@@ -158,25 +158,25 @@ def main():
         --ensure-connected: bool, 如果设置，确保所有节点都与根节点相连。默认未设置。
         --root-select-strategy: str, 选择根节点的策略。默认为 'auto'。
     """
-    parser = argparse.ArgumentParser(description=i18n_string("description"))
+    parser = argparse.ArgumentParser(description=i18n_string("description.main.app_function"))
     parser.add_argument(
         "--input-file",
         type=str,
         default="map.osm",
-        help=i18n_string("input_file_help"),
+        help=i18n_string("help.main.input_file"),
     )
     parser.add_argument(
         "--output-file",
         type=str,
         default="map.json",
-        help=i18n_string("output_file_help"),
+        help=i18n_string("help.main.output_file"),
     )
     parser.add_argument(
         "--output-format",
         type=str,
         default="json",
         choices=["json", "gv"],
-        help=i18n_string("output_format_help"),
+        help=i18n_string("help.main.output_format"),
     )
 
     parser.add_argument(
@@ -184,24 +184,24 @@ def main():
         type=str,
         default="nest",
         choices=["nest", "plain"],
-        help=i18n_string("export_plain_json_help"),
+        help=i18n_string("help.main.json_schema"),
     )
     parser.add_argument(
-        "--stop-level", type=int, help=i18n_string("stop_level_help")
+        "--stop-level", type=int, help=i18n_string("help.main.stop_level")
     )
     parser.add_argument(
-        "--only-level", type=int, help=i18n_string("only_level_help")
+        "--only-level", type=int, help=i18n_string("help.main.only_level")
     )
     parser.add_argument(
         "--ensure-connected",
         action="store_true",
-        help=i18n_string("ensure_connected_help"),
+        help=i18n_string("help.main.ensure_connected"),
     )
     parser.add_argument(
         "--root-select-strategy",
         type=str,
         default="auto",
-        help=i18n_string("root_select_strategy_help"),
+        help=i18n_string("help.main.root_select_strategy"),
     )
     args = parser.parse_args()
 
@@ -237,7 +237,7 @@ def main():
             with open(args.output_file, "w", encoding="utf-8") as f:
                 f.write(json_output)
                 print(
-                    i18n_string("json_output").format(
+                    i18n_string("message.main.json_output_written").format(
                         output_file=args.output_file
                     )
                 )
