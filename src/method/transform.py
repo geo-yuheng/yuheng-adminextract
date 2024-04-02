@@ -2,7 +2,7 @@ from typing import Dict
 
 import networkx as nx
 
-from localization import i18n_string
+from .localization import i18n_string
 
 
 def graph_to_nested_json(G: nx.DiGraph, root_id: int) -> Dict:

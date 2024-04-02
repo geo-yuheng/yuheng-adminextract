@@ -5,9 +5,9 @@ import os
 import networkx as nx
 from yuheng import Carto
 
-from localization import i18n_string
-from prune import prune_graph_to_level, prune_graph_to_root
-from transform import (
+from method.localization import i18n_string
+from method.prune import prune_graph_to_level, prune_graph_to_root
+from method.transform import (
     graph_to_nested_json,
     graph_to_plain_json,
     visualize_graph,
@@ -238,16 +238,18 @@ def main():
     if args.output_format == "json":
         try:
             if args.json_schema == "plain":
+                if args.only_level:
+                    spec_level = args.only_level
+                else:
+                    spec_level = None
                 json_output = json.dumps(
-                    graph_to_plain_json(G, args.only_level),
+                    graph_to_plain_json(G, spec_level),
                     indent=2,
                     ensure_ascii=False,
                 )
             else:  # args.json_schema == "nest"
                 json_output = json.dumps(
-                    graph_to_nested_json(
-                        G, root_id, args.stop_level, args.only_level
-                    ),
+                    graph_to_nested_json(G, root_id),
                     indent=2,
                     ensure_ascii=False,
                 )

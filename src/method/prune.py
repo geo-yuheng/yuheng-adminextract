@@ -1,6 +1,6 @@
 import networkx as nx
 
-from localization import i18n_string
+from .localization import i18n_string
 
 
 def prune_graph_to_root(G: nx.DiGraph, root_id: int) -> nx.DiGraph:

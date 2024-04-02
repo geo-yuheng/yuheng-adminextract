@@ -1,7 +1,10 @@
 import json
+import os.path
 from typing import Any, Dict
 
-JSON_FILE_PATH = "localization.json"
+JSON_FILE_PATH = os.path.join(
+    os.path.dirname(__file__), "../../assets/localization.json"
+)
 LOCALE = "zh"
 
 
