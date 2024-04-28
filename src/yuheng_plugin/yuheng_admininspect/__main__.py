@@ -1,6 +1,7 @@
 import argparse
 
 from __init__ import main
+from .method.localization import i18n_string
 
 if __name__ == "__main__":
     """Processes map data and outputs it as JSON or Graphviz file.
@@ -82,4 +83,4 @@ if __name__ == "__main__":
         help=i18n_string("help.main.root_select_strategy"),
     )
     args = parser.parse_args()
-    main()
+    main(args)

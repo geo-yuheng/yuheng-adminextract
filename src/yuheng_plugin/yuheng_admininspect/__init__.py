@@ -1,12 +1,13 @@
 import json
 import os
+import sys
 
 import networkx as nx
 from yuheng import Carto
 
-from method.localization import i18n_string
-from method.prune import prune_graph_to_level, prune_graph_to_root
-from method.transform import (
+from .method.localization import i18n_string
+from .method.prune import prune_graph_to_level, prune_graph_to_root
+from .method.transform import (
     graph_to_nested_json,
     graph_to_plain_json,
     visualize_graph,
@@ -140,7 +141,11 @@ def find_root_node_id(G: nx.DiGraph, strategy="input") -> int:
     return root_candidates[0][0]
 
 
-def main(**kwargs):
+def main(args=None, **kwargs):
+    if args == None and kwargs == {}:
+        print("Nothing to do!")
+        sys.exit(0)
+
     world = Carto()
     world.read(mode="file", file_path=args.input_file)
     G = build_graph(world)
